@@ -1,0 +1,7 @@
+library(data.table)
+setwd("/home/wwchen/Complex-data-statistics-methods/")
+m<-fread("cofreewy.txt",header = T)
+s<-lm(CO~.,m)
+summary(s)
+s<-lm(CO~Traffic + Wind,m)#去除了不显著变量
+summary(s)
