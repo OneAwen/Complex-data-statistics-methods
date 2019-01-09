@@ -1,0 +1,15 @@
+library(data.table)
+setwd("/home/wwchen/Complex-data-statistics-methods/")
+m<-fread("pharynx.csv")
+m<-m[,-c("CASE","ENTRY_DT")]
+m<-m[m$COND!=9 & m$GRADE!=9, ]#remove NA
+m[m$COND ==3|m$COND == 4]=2;m[m$COND==0]=1#数据清洗完毕
+
+#2.2.2生存分析数据的Cox回归模型
+library(survival)
+fit<-survfit(Surv(TIME,as.numeric(STATUS))~SEX,m)#Sruv可以创建一个生存对象#survfit拟合生存曲线
+library(survminer)
+ggsurvplot(fit,legend = "bottom", 
+           legend.title = "Sex",
+           legend.labs = c("Male", "Female"),
+           linetype = "strata",pval = T)#将图例移动到下方#改变图例名称# 改变线条类型#显示P值
