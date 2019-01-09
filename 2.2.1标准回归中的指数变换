@@ -1,0 +1,18 @@
+library(data.table)
+setwd("/home/wwchen/Complex-data-statistics-methods/")
+m<-fread("pharynx.csv")
+m<-m[,-c("CASE","ENTRY_DT")]
+m<-m[m$COND!=9 & m$GRADE!=9, ]#remove NA
+m[m$COND ==3|m$COND == 4]=2;m[m$COND==0]=1#数据清洗完毕
+
+#2.2.1标准线性回归指数变换
+#简单线性回归
+a<-lm(TIME~.,m)
+summary(a)
+#选取合适指数
+library(MASS)
+boxcox(TIME~.,data=m)#根据图形选择对数似然函数最大时的lambda
+a=lm(TIME^0.3~.,m)
+b=step(a)
+summary(a)
+anova(b)
