@@ -1,0 +1,93 @@
+#2.2.5决策树回归（回归树）
+library(rpart.plot)
+a=rpart(y~.,w)
+rpart.plot(a,type = 2)
+#5折树
+n=1385;zz1=1:n #zz1,所有观测值（行）的下标
+zz2<-rep(1:5,ceiling(n/5))[1:n]#创建n/5组1:5的值
+set.seed(100);zz2=sample(zz2,n)#sample进行无放回的重排序抽取，目的是打乱下标顺序
+NMSE=rep(0,5);NMSEO=NMSE
+for (i in 1:5){
+  m <- zz1[zz2==i] #得到一个关于下标号的向量
+  a <- rpart(y~.,w[-m,])#去掉以M中存在的下标号行作为训练集
+  y0 <- predict(a,w[-m,])#预测训练集数据
+  y1 <- predict(a,w[m,])#预测测试集数据
+  NMSEO[i] <- mean((w$y[-m]-y0)^2)/mean((w$y[-m]-mean(w$y[-m]))^2)#计算NMSE公式-训练集
+  NMSE[i] <-mean((w$y[m]-y1)^2)/mean((w$y[m]-mean(w$y[m]))^2)#测试集
+}
+
+MNMSEO<-mean(NMSEO);MNMSE<-mean(NMSE)#输出训练集以及测试集的标准化均方差（NMSE）的平均
+MNMSEO;MNMSE
+
+#2.2.6 Boosting回归
+library(mboost)
+n=1385;zz1=1:n #zz1,所有观测值（行）的下标
+zz2<-rep(1:5,ceiling(n/5))[1:n]#创建n/5组1:5的值
+set.seed(100);zz2=sample(zz2,n)#sample进行无放回的重排序抽取，目的是打乱下标顺序
+NMSE=rep(0,5);NMSEO=NMSE
+for (i in 1:5){
+  m <- zz1[zz2==i] #得到一个关于下标号的向量
+  a <- mboost(y~btree(x1)+btree(x2)+btree(x3)+btree(x4)+btree(x5)+btree(x6),w[-m,])#去掉以M中存在的下标号行作为训练集
+  y0 <- predict(a,w[-m,])#预测训练集数据
+  y1 <- predict(a,w[m,])#预测测试集数据
+  NMSEO[i] <- mean((w$y[-m]-y0)^2)/mean((w$y[-m]-mean(w$y[-m]))^2)#计算NMSE公式-训练集
+  NMSE[i] <-mean((w$y[m]-y1)^2)/mean((w$y[m]-mean(w$y[m]))^2)#测试集
+}
+
+MNMSEO<-mean(NMSEO);MNMSE<-mean(NMSE)#输出训练集以及测试集的标准化均方差（NMSE）的平均
+MNMSEO;MNMSE
+
+#2.2.7 Bagging回归
+library(ipred)
+n=1385;zz1=1:n #zz1,所有观测值（行）的下标
+zz2<-rep(1:5,ceiling(n/5))[1:n]#创建n/5组1:5的值
+set.seed(100);zz2=sample(zz2,n)#sample进行无放回的重排序抽取，目的是打乱下标顺序
+NMSE=rep(0,5);NMSEO=NMSE
+for (i in 1:5){
+  m <- zz1[zz2==i] #得到一个关于下标号的向量
+  a <- randomForest(y~.,w[-m,])#去掉以M中存在的下标号行作为训练集
+  y0 <- predict(a,w[-m,])#预测训练集数据
+  y1 <- predict(a,w[m,])#预测测试集数据
+  NMSEO[i] <- mean((w$y[-m]-y0)^2)/mean((w$y[-m]-mean(w$y[-m]))^2)#计算NMSE公式-训练集
+  NMSE[i] <-mean((w$y[m]-y1)^2)/mean((w$y[m]-mean(w$y[m]))^2)#测试集
+}
+
+MNMSEO<-mean(NMSEO);MNMSE<-mean(NMSE)#输出训练集以及测试集的标准化均方差（NMSE）的平均
+MNMSEO;MNMSE
+
+#2.2.8 随机森林回归
+library(randomForest)
+n=1385;zz1=1:n #zz1,所有观测值（行）的下标
+zz2<-rep(1:5,ceiling(n/5))[1:n]#创建n/5组1:5的值
+set.seed(100);zz2=sample(zz2,n)#sample进行无放回的重排序抽取，目的是打乱下标顺序
+NMSE=rep(0,5);NMSEO=NMSE
+for (i in 1:5){
+  m <- zz1[zz2==i] #得到一个关于下标号的向量
+  a <- rpart(y~.,w[-m,])#去掉以M中存在的下标号行作为训练集
+  y0 <- predict(a,w[-m,])#预测训练集数据
+  y1 <- predict(a,w[m,])#预测测试集数据
+  NMSEO[i] <- mean((w$y[-m]-y0)^2)/mean((w$y[-m]-mean(w$y[-m]))^2)#计算NMSE公式-训练集
+  NMSE[i] <-mean((w$y[m]-y1)^2)/mean((w$y[m]-mean(w$y[m]))^2)#测试集
+}
+
+MNMSEO<-mean(NMSEO);MNMSE<-mean(NMSE)#输出训练集以及测试集的标准化均方差（NMSE）的平均
+MNMSEO;MNMSE
+
+#2.2.9 人工神经网络回归
+library(nnet)
+set.seed(444)
+n=1385;zz1=1:n #zz1,所有观测值（行）的下标
+zz2<-rep(1:5,ceiling(n/5))[1:n]#创建n/5组1:5的值
+set.seed(100);zz2=sample(zz2,n)#sample进行无放回的重排序抽取，目的是打乱下标顺序
+NMSE=rep(0,5);NMSEO=NMSE
+for (i in 1:5){
+  m <- zz1[zz2==i] #得到一个关于下标号的向量
+  a <- nnet(w[-m,-1],w[-m,1],size = 5,rang = 0.1,decay=0.0005,naxit=200)#去掉以M中存在的下标号行作为训练集
+  y0 <- predict(a,w[-m,-1])#预测训练集数据
+  y1 <- predict(a,w[m,-1])#预测测试集数据
+  NMSEO[i] <- mean((w$y[-m]-y0)^2)/mean((w$y[-m]-mean(w$y[-m]))^2)#计算NMSE公式-训练集
+  NMSE[i] <-mean((w$y[m]-y1)^2)/mean((w$y[m]-mean(w$y[m]))^2)#测试集
+}
+
+MNMSEO<-mean(NMSEO);MNMSE<-mean(NMSE)#输出训练集以及测试集的标准化均方差（NMSE）的平均
+MNMSEO;MNMSE
