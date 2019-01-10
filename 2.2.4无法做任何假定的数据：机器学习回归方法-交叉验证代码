@@ -1,0 +1,28 @@
+#2.2.4无法做任何假定的数据：机器学习回归方法
+library(data.table)
+library(dplyr)
+setwd("/home/wwchen/Complex-data-statistics-methods/")
+w=fread("mg.csv",header = T)
+w_lm <-lm(y~.,w)
+summary(w_lm)
+res<-round(cor(w), 2)#保留两位小数
+corrplot::corrplot(res)#绘制漂亮的相关性图
+pairs(w)#两两散点图（plot(m)）
+
+#). 简单线性回归的5折交叉验证
+
+n=1385;zz1=1:n #zz1,所有观测值（行）的下标
+zz2<-rep(1:5,ceiling(n/5))[1:n]#创建n/5组1:5的值
+set.seed(100);zz2=sample(zz2,n)#sample进行无放回的重排序抽取，目的是打乱下标顺序
+NMSE=rep(0,5);NMSEO=NMSE
+for (i in 1:5){
+  m <- zz1[zz2==i] #得到一个关于下标号的向量
+  a <- lm(y~.,w[-m,])#去掉以M中存在的下标号行作为训练集
+  y0 <- predict(a,w[-m,])#预测训练集数据
+  y1 <- predict(a,w[m,])#预测测试集数据
+  NMSEO[i] <- mean((w$y[-m]-y0)^2)/mean((w$y[-m]-mean(w$y[-m]))^2)#计算NMSE公式-训练集
+  NMSE[i] <-mean((w$y[m]-y1)^2)/mean((w$y[m]-mean(w$y[m]))^2)#测试集
+}
+
+MNMSEO<-mean(NMSEO);MNMSE<-mean(NMSE)#输出训练集以及测试集的标准化均方差（NMSE）的平均
+MNMSEO;MNMSE
