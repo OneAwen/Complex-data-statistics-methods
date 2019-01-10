@@ -1,0 +1,47 @@
+#2.2.3数据出现多重共线性情况
+library(data.table)
+library(dplyr)
+setwd("/home/wwchen/Complex-data-statistics-methods/")
+library(lars)
+data(package="lars")
+data(diabetes)
+nrow(diabetes)
+ncol(diabetes)
+dim(diabetes)#数据载入与查看
+kappa(diabetes$x2)#x2的条件数K；大于30认为严重共线性
+library(car)#包含方差膨胀因子VIF的软件包
+vif(lm(y~.,diabetes$x2))
+
+#1).岭回归
+library(ridge)
+new_diabetes<-cbind('y'=diabetes[,"y"],diabetes$x,diabetes$x2)
+new_diabetes<-as.data.frame(new_diabetes)
+a<-linearRidge(y~.,new_diabetes[,c(1,12:75)])
+summary(a)   
+
+#2).Lasso回归
+x<-diabetes[,"x"]
+y<-as.matrix(diabetes[,"y"])            
+x2<-as.matrix(diabetes[,"x2"])
+laa<-lars(x2,y)
+plot(laa)#绘图
+summary(laa)#给出CP的值
+cva=cv.lars(x2,y,K=10)#10折交叉验证
+best<-cva$index[which.min(cva$cv)]#选择合适的值（随机性使得结果不同）
+coef<-coef.lars(laa,mode="fraction",s=best)#使用CV最小步时的系数
+min(laa$Cp)#选择最小CP，结果是第15  DF：16 RSS：1213289  Cp:18.198
+coef1<-coef.lars(laa,mode="step",s=15)#使laa$cp最小step的系数
+#3)适应性Lasso回归
+library(msgps)
+al=msgps(x2,as.vector(y),penalty = "alasso",gamma = 1,lambda = 0)
+summary(al)
+plot(al)
+#4)偏最小二乘法
+library(lars)
+library(pls)
+ap <- plsr(y~x2,64,validation="CV")#求出所有可能的64个因子
+summary(ap)
+ap$loadings
+ap$coef
+validationplot(ap)#5个因子时RMSEP最小
+RMSEP(ap);MSEP(ap);R2(ap)#不同的指标都是5个因子时最小
