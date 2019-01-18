@@ -1,0 +1,40 @@
+library(factoextra)
+library(ggplot2)
+library(cluster)
+data("USArrests")
+desc_stats<-data.frame(
+  Min = apply(USArrests, 2, min),
+  Med = apply(USArrests, 2, median),
+  Mean = apply(USArrests, 2, mean),
+  SD = apply(USArrests, 2, sd),
+  Max = apply(USArrests, 2, max))
+#变量有很大的方差及均值时需进行标准化
+df<-scale(USArrests)
+
+#计算数据是否可以有效聚类，P<0.5为有效
+res<-get_clust_tendency(df,40,graph = T)
+res$plot
+
+#使用函数clusGap()来计算用于估计最优聚类数
+set.seed(123)
+gap_stat<-clusGap(df,FUN=kmeans,nstart=20,K.max = 10,B=50)
+fviz_gap_stat(gap_stat)#最佳聚类成4类
+km.res<-kmeans(df,4,nstart = 25)
+fviz_cluster(km.res,USArrests)
+km.res$cluster
+sil<-silhouette(km.res$cluster,dist(df))
+rownames(sil)<-rownames(USArrests)
+fviz_silhouette(sil)
+neg_sil_index<-which(sil[,"sil_width"]<0)
+sil[neg_sil_index,,drop=FALSE]
+
+#最佳使用eclust()
+#K均值聚类
+res.km<-eclust(df,"kmeans")
+fviz_gap_stat(res.km$gap_stat)
+fviz_silhouette(res.km)
+#层次聚类
+res.hc<-eclust(df,"hclust")
+fviz_dend(res.hc,rect = T)#dendrogam系统树状图
+fviz_silhouette(res.hc)
+fviz_cluster(res.hc)
